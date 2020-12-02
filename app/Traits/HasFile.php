@@ -12,41 +12,26 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Http\FormRequest;
+use JetBrains\PhpStorm\Pure;
 
 trait HasFile
 {
-    /**
-     * @var array $paths
-     */
-    public $paths = [];
-    /**
-     * @var string $disk
-     */
-    private $disk = 'public';
+    public array $paths = [];
 
-    /**
-     * @param string $fileName
-     * @param string $directory
-     * @param Request|FormRequest|null $request
-     * @return $this
-     */
-    public function upload(string $fileName, string $directory = 'upload', $request = null):self
+    private string $disk = 'public';
+
+    public function upload(string $fileName, string $directory = 'upload', Request|FormRequest $request = null):self
     {
-        $request = $request ?? request();
+        $request ??= request();
         if ($request->hasFile($fileName)) {
-            $this->paths = array_map(Closure::bind(function(UploadedFile $file)use($directory) {
-                return Storage::disk($this->disk = $this->disk ?? 'public')
-                    ->put($directory, $file);
-            }, $this), Arr::wrap($request->file($fileName)));
+            $this->paths = array_map(
+                fn(UploadedFile $file) => Storage::disk($this->disk ??= 'public')->put($directory, $file),
+                Arr::wrap($request->file($fileName))
+            );
         }
         return $this;
     }
 
-    /**
-     * @param string $disk
-     * @return $this
-     * @throws Exception
-     */
     public function disk(string $disk):self
     {
         if (empty(trim($disk))) {
@@ -56,36 +41,23 @@ trait HasFile
         return $this;
     }
 
-    /**
-     * @return int
-     */
+    #[Pure]
     public function hasFile(): int
     {
         return count($this->paths);
     }
 
-    /**
-     * @return Collection
-     */
     public function filePaths(): Collection
     {
         return collect($this->paths);
     }
 
-    /**
-     * @return string|null
-     */
     public function firstPath():?string
     {
         return $this->filePaths()->first();
     }
 
-    /**
-     * @param string|null $filePath
-     * @return bool|int
-     * @throws Exception
-     */
-    public function delete(string $filePath = null)
+    public function delete(string $filePath = null): bool|int
     {
         if(empty(trim($this->disk))) {
             throw new Exception("Please select disk first!");
