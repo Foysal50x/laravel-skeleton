@@ -16,7 +16,7 @@ clone your newly created repository in your local machine then checkout specific
 #### Branch list and specification
 - 6.x [laravel version 6.x]
 - 7.x [laravel version 7.x]
-- 8.x [laravel version 8.x]
+- 8.x [laravel version 8.17.1]
 - php8 [laravel version 8.x and php version 8]
 
 ## Package Included
